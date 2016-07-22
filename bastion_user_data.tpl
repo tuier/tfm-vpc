@@ -1,32 +1,11 @@
 #!/bin/bash -v
+ZONE=$(wget -qO - http://169.254.169.254/latest/meta-data/placement/availability-zone)
+INSTANCE_ID=$$(wget http://169.254.169.254/latest/meta-data/instance-id -O - -q)
 
-EC2_URL=https://ec2.${region}.amazonaws.com
+declare -A enis_map
+enis_map=(${enis_map})
+eni=$${enis_map[$${ZONE: -1}]}
+/usr/bin/aws ec2 attach-network-interface --network-interface-id $${eni} --instance-id $${INSTANCE_ID} --device-index 1 --region '${region}'
+/bin/sleep 60
 
-# set fqdn pointing to instance ip
-if [[ -n "${route53_zone_id}" && -n "${fqdn}" ]]; then
-	MYMAC=$(wget http://169.254.169.254/latest/meta-data/network/interfaces/macs/ -O - -q)
-	MYIP=$(wget http://169.254.169.254/latest/meta-data/network/interfaces/macs/$MYMAC/ipv4-associations -O - -q)
-
-	cat << EOF > /tmp/route53-change.json
-{
-	"Comment": "Updating Bastion Host Record",
-	"Changes": [
-		{
-			"Action": "UPSERT",
-			"ResourceRecordSet": {
-				"Name": "bastion-${fqdn}",
-				"Type": "A",
-				"TTL": 60,
-				"ResourceRecords": [
-					{
-						"Value": "$MYIP"
-					}
-				]
-			}
-		}
-	]
-}
-EOF
-	aws route53 change-resource-record-sets --hosted-zone-id "${route53_zone_id}" --change-batch file:///tmp/route53-change.json
-	rm -rf /tmp/route53-change.json
-fi
+ec2ifscan

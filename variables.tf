@@ -1,4 +1,7 @@
-variable "region" {
+variable "region" {}
+
+variable "azs_count" {
+  default = 3
 }
 
 variable "azs_name" {
@@ -46,7 +49,7 @@ variable "cluster_name" {
   default = "vpc-test"
 }
 
-variable "zone_id" {
+variable "route_zone_id" {
   default     = ""
   description = "dn zone where you want the dn record in, AWS ID of the FLD"
 }
@@ -54,6 +57,11 @@ variable "zone_id" {
 variable "fqdn" {
   default     = ""
   description = "domain name that you want the bastion on, should use a subdomain, result bastion-<cluster_name>.<fqdn>"
+}
+
+variable "user_data" {
+  default     = ""
+  description = "extra user data added to the bastion, must be shell"
 }
 
 variable "tag_product" {

@@ -7,29 +7,34 @@ This terraform module can create a cross zone vpc.
 ###### Result
 
 This will create a vpc across multiple zone with a couple of subnet, routing 
-table, bastion instance, elb ans Managed NAT
+table, bastion instance, elb and Managed NAT
 
 ### Subnet
 
-There will be two level of subnet the front and the back and there will be 
-a subnet per type per zone
+There will be two level of subnet the public and the private and there will be 
+a subnet per level per zone
 
 ### route table
 
-two routing table are create one public and one private the public is linked to 
-the front subnets and the Gateway
-the private to the back subnets and the Managed NAT
+one routing table are create one public and one for each subnet in private 
+subnets.
+the public is linked to the public's subnets and the Internet Gateway, the 
+private to the private's subnets and the Managed NAT
 
 ### bastion instance and routing
 
-all bastion instance will be launched in an auto scaling group in the from subnets
-When a new Bastion instance is spawned a command to change the EIP association
-is run to make sure we always have the same IP
+A bastion is launched through an auto scaling group in all public's subnets.
+In each subnet an ENI and EIP is created.
+When a new Bastion instance is booted a command to change the ENI association
+is run to make sure he always have associated with one ENI/EIP.
+Some DNS record and healh-check will route to bastion no matter with ENI is 
+using.
 
 ### NAT
 
-All front subnet have one Managed NAT gateway and a routing table is create for
- each back subnet with a route from the subnet to the (AZ) corresponding NAT gateway
+All public's subnet have one Managed NAT gateway and a routing table is create 
+for each private's subnet with a route from the subnet to the (AZ) 
+corresponding NAT gateway
 
 ## Schema for 3 zone
 
@@ -48,7 +53,7 @@ All front subnet have one Managed NAT gateway and a routing table is create for
 |  .---------.   .---------.   .---------.  |
 |  |         |   |         |   |         |  |
 |  | subnet  |   | subnet  |   | subnet  |  |
-|  | front a |   | front b |   | front c |  |
+|  | pub   a |   | pub   b |   | pub   c |  |
 |  |         |   |         |   |         |  |
 |  |  .---.  |   |  .---.  |   |  .---.  |  |
 |  |  |NAT|  |   |  |NAT|  |   |  |NAT|  |  |
@@ -64,7 +69,7 @@ All front subnet have one Managed NAT gateway and a routing table is create for
 |  .---------.   .---------.   .---------.  |
 |  |         |   |         |   |         |  |
 |  | subnet  |   | subnet  |   | subnet  |  |
-|  | back  a |   | back  b |   | back  c |  |
+|  | priv  a |   | priv  b |   | priv  c |  |
 |  |         |   |         |   |         |  |
 |  |         |   |         |   |         |  |
 |  |         |   |         |   |         |  |
@@ -82,8 +87,10 @@ All front subnet have one Managed NAT gateway and a routing table is create for
 As input you need to specified the following variable:
 
 
-region: the region you want you vpc on
-azs_name: the zone you want your vps on
+region: the region you want your vpc on
+azs_name: the zone you want your vpc on
+azs_count: number of zone you want your vpc on, must be not be superior of the 
+number of zone available on the region
 
 network_network: a number to determine the network prefix 
 (10,<network_number>.0.0/24)
@@ -105,7 +112,7 @@ tags: all tag who should be on every resources
 
 vpc_id: id of the vpc newly created
 
-subnets: all subnet id from the private area value
+subnets: all subnet id from the private
 
 default_sg:  the default SecurityGroup for the vpc
 
