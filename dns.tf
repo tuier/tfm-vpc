@@ -2,11 +2,15 @@ resource "aws_route53_record" "bastion" {
   #count = "${length(aws_network_interface.bastion.*.private_ips)}"
   count = "${var.azs_count}"
 
-  name            = "bastion-${var.cluster_name}"
-  zone_id         = "${var.route_zone_id}"
-  type            = "A"
-  set_identifier  = "${count.index}"
-  weight          = "${count.index}"
+  name           = "bastion-${var.cluster_name}"
+  zone_id        = "${var.route_zone_id}"
+  type           = "A"
+  set_identifier = "${count.index}"
+
+  weighted_routing_policy {
+    weight = "${count.index}"
+  }
+
   records         = ["${element(aws_eip.bastion.*.public_ip,count.index)}"]
   ttl             = 60
   health_check_id = "${element(aws_route53_health_check.bastion_check.*.id,count.index)}"

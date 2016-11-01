@@ -1,7 +1,7 @@
 variable "region" {}
 
 variable "azs_count" {
-  default = 3
+  default = "3"
 }
 
 variable "azs_name" {
@@ -25,15 +25,15 @@ variable "network_number" {
 # https://aws.amazon.com/amazon-linux-ami/
 variable "ami_bastion" {
   default = {
-    ap-northeast-1 = "ami-4232172c"
-    ap-southeast-1 = "ami-deb176bd"
-    ap-southeast-2 = "ami-cad986a9"
-    eu-west-1      = "ami-54e03f27"
-    sa-east-1      = "ami-7b15ad17"
-    us-east-1      = "ami-66b6c60c"
-    us-west-1      = "ami-ede78b8d"
-    us-west-2      = "ami-31342050"
-    eu-central-1   = "ami-8d4a59e1"
+    us-east-1      = "ami-6869aa05"
+    us-west-2      = "ami-7172b611"
+    us-west-1      = "ami-31490d51"
+    eu-west-1      = "ami-f9dd458a"
+    eu-central-1   = "ami-ea26ce85"
+    ap-southeast-1 = "ami-a59b49c6"
+    ap-northeast-1 = "ami-374db956"
+    ap-southeast-2 = "ami-dc361ebf"
+    sa-east-1      = "ami-6dd04501"
   }
 }
 

@@ -89,27 +89,23 @@ resource "aws_launch_configuration" "bastion" {
   iam_instance_profile        = "${aws_iam_instance_profile.bastion_profile.name}"
   security_groups             = ["${aws_security_group.allow_bastion_ingress.id}", "${aws_security_group.bastion.id}"]
 
-  user_data = "${template_file.launch_bastion.rendered}\n${var.user_data}"
+  user_data = "${data.template_file.launch_bastion.rendered}\n${var.user_data}"
 
   lifecycle {
     create_before_destroy = true
   }
 }
 
-resource "template_file" "launch_bastion" {
+data "template_file" "launch_bastion" {
   vars {
     region   = "${var.region}"
-    enis_map = "${join(" ",template_file.enis_map.*.rendered)}"
+    enis_map = "${join(" ",data.template_file.enis_map.*.rendered)}"
   }
 
   template = "${file("${path.module}/bastion_user_data.tpl")}"
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
-resource "template_file" "enis_map" {
+data "template_file" "enis_map" {
   # count = "${length(aws_network_interface.bastion.*.id)}"
 
   count = "${var.azs_count}"
@@ -119,9 +115,5 @@ resource "template_file" "enis_map" {
     eni  = "${element(aws_network_interface.bastion.*.id,count.index)}"
   }
 
-  template = "[\"${zone}\"]=\"${eni}\""
-
-  lifecycle {
-    create_before_destroy = true
-  }
+  template = "${file("${path.module}/enis_map.tpl")}"
 }
